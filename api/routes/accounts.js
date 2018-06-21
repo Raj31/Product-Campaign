@@ -18,6 +18,7 @@ router.get('/', (req, res, next) => {
             console.log(err);
             res.status(500).json({ error: err });
         })
+
  //res.status(200).json({
     //    message: 'Handling GET request to /products'
     //});
@@ -129,19 +130,12 @@ router.post('/user/:accountId', (req, res, next) => {
   
     const id = req.params.accountId;
     const username = req.body.username;
-    var user={
-        username:req.body.username,
-        email:req.body.email,
-        password:req.body.password,
-        accesstype:accesstype,
-        status:status
-    }
-    
+
     const updateOps = {};
     for (const ops of req.body) {
         updateOps[ops.propName] = ops.value;
     }
-    Account.update({ _id: id,username:username }, { $set: updateOps })
+    Account.update({ _id: id,"users.username":username }, { $set: updateOps })
     .exec()
     .then(result =>{
         console.log(result);
@@ -156,8 +150,6 @@ router.post('/user/:accountId', (req, res, next) => {
         }
 
     )
-        
-
 });
 
 router.patch('/:accountId', (req, res, next) => {
