@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const accountRoutes = require('./api/routes/accounts');
-//const orderRoutes = require('./api/routes/orders');
+const campaignRoutes = require('./api/routes/campaigns');
 
 mongoose.connect('mongodb://rajendra_dixit:india123@node-rest-shop-shard-00-00-bos42.mongodb.net:27017,node-rest-shop-shard-00-01-bos42.mongodb.net:27017,node-rest-shop-shard-00-02-bos42.mongodb.net:27017/test?ssl=true&replicaSet=node-rest-shop-shard-0&authSource=admin');
 
@@ -28,11 +28,11 @@ app.use((req, res, next) =>{
 });
 //Routes which handles incoming requrest
 app.use('/accounts',accountRoutes);//accountRoutes is declared on top as const, contains path pf products file
-//app.use('/orders',orderRoutes);
+app.use('/campaigns',campaignRoutes);
 
 //for invalid request
 app.use((req, res, next) => {
-    const error = new Error('Not found');
+    const error = new Error('Route Not found');
     error.staus = 404;
     next(error);
 });

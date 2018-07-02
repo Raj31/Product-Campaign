@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 const Account = require('../models/account');
 
+var ObjectId = mongoose.Schema.Types.ObjectId;
 
 router.get('/', (req, res, next) => {
     //to get the value of additional query parameters, use below code for query string color
@@ -49,7 +50,7 @@ router.post('/', (req, res, next) => {
         .then(result => {
             console.log(result);
             res.status(201).json({
-                message: 'Handling POST request to /products',
+                message: 'Handling POST request to /accounts',
                 createdProduct: result
             });
         })
@@ -95,6 +96,21 @@ router.get('/:accountId', (req, res, next) => {
     })
 });
 
+router.get('/user/:accountId/:userId', (req, res, next) => {
+
+    //how to call
+    //http://localhost:3000/accounts/5aef5fb1d786d03dd422b38c
+    const id = req.params.accountId;
+    const userId =req.params.userId;
+
+    Account.findById(id, function(err, post) {
+        var subDoc = post.users.id(userId);
+        res.status(200).json(subDoc);
+      
+      });
+
+});
+
 router.post('/user', (req, res, next) => {
   
     const id = req.body.accountId;
@@ -102,8 +118,8 @@ router.post('/user', (req, res, next) => {
         username:req.body.username,
         email:req.body.email,
         password:req.body.password,
-        accesstype:accesstype,
-        status:status
+        accesstype:req.body.accesstype,
+        status:req.body.status
     }
 
     //{$addToSet : {"items" : {'item_name' : "my_item_two" , 'price' : 1 }} }
@@ -117,7 +133,9 @@ router.post('/user', (req, res, next) => {
         {
             console.log(err);
             res.status(500).json({
-                error:err
+                error:err,
+                userPassed:user,
+                id:id
             })
         }
 
@@ -126,30 +144,33 @@ router.post('/user', (req, res, next) => {
 
 });
 
-router.post('/user/:accountId', (req, res, next) => {
-  
+router.patch('/user/:accountId/:userId', (req, res, next) => {
+  //how to call
+  //[
+  //	{"propName":"email", "value":"paperjag@yahoo.com"}
+  //]
+
     const id = req.params.accountId;
-    const username = req.body.username;
+    const userId =req.params.userId;
 
     const updateOps = {};
     for (const ops of req.body) {
         updateOps[ops.propName] = ops.value;
     }
-    Account.update({ _id: id,"users.username":username }, { $set: updateOps })
-    .exec()
-    .then(result =>{
-        console.log(result);
-        res.status(200).json(result);
-    })
-    .catch(err=>
-        {
-            console.log(err);
-            res.status(500).json({
-                error:err
-            })
-        }
 
-    )
+    Account.findById(id, function(err, post) {
+        var subDoc = post.users.id(userId);
+        subDoc.set(updateOps);
+      
+        // Using a promise rather than a callback
+        post.save().then(function(savedPost) {
+          //res.send(savedPost);
+          res.status(200).json(savedPost);
+        }).catch(function(err) {
+          res.status(500).send(err);
+        });
+      });
+
 });
 
 router.patch('/:accountId', (req, res, next) => {
